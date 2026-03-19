@@ -22,7 +22,7 @@ def load_pdfs(directory: Path) -> list:
 
 def chunk_documents(docs: list) -> list:
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
+        chunk_size=500,  # chunks for better embedding performance
         chunk_overlap=50,
         separators=["\n\n", "\n", ".", " "]
     )
@@ -44,11 +44,11 @@ def embed_and_store(chunks: list) -> Chroma:
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     
     # Process in batches to avoid rate limits
-    BATCH_SIZE = 100
-    vectorstore = None
+    BATCH_SIZE = 100 
+    vectorstore = None  # Initialize the storage for vector embeddings 
     
     for i in range(0, len(chunks), BATCH_SIZE):
-        batch = chunks[i:i + BATCH_SIZE]
+        batch = chunks[i:i + BATCH_SIZE]  # Get the current batch of chunks
         print(f"Embedding batch {i//BATCH_SIZE + 1}/{(len(chunks)-1)//BATCH_SIZE + 1} ({len(batch)} chunks)...")
         
         if vectorstore is None:
