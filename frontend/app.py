@@ -84,25 +84,25 @@ if submit and question.strip():
             st.error(f"Something went wrong: {e}")
             st.stop()
 
-    # ── Confidence Indicator ──────────────────────────────────────────────────
+    #  Confidence Indicator 
     confidence = data["confidence"]
     low_confidence = data["low_confidence"]
 
     if low_confidence:
-        st.warning("⚠️ Low confidence — the documents may not contain enough information to answer this reliably.")
-    elif confidence >= 0.75:
-        st.success(f"✅ High confidence: {confidence:.0%}")
-    elif confidence >= 0.5:
-        st.info(f"ℹ️ Moderate confidence: {confidence:.0%}")
+        st.error("🔴 Not Confident — insufficient information in loaded documents.")
+    elif confidence >= 0.55:
+        st.success("🟢 Confident")
+    elif confidence >= 0.45:
+        st.info("🟡 Semi-Confident")
     else:
-        st.warning(f"⚠️ Low confidence: {confidence:.0%}")
+        st.error("🔴 Not Confident")
 
-    # ── Answer ────────────────────────────────────────────────────────────────
+    # Answer 
     st.subheader("Answer")
     st.write(data["answer"])
     st.caption(f"Response time: {data['response_time_ms']}ms")
 
-    # ── Sources ───────────────────────────────────────────────────────────────
+    # Sources
     st.divider()
     st.subheader("📎 Sources (Audit Trail)")
 
@@ -111,7 +111,7 @@ if submit and question.strip():
         score = source["score"]
 
         with st.expander(f"[{source['source_id']}] {doc_name} — Page {source['page']}"):
-            st.progress(score, text=f"Relevance score: {score:.0%}")
+            st.write(f"Relevance: {source['score']:.2f}")
 
 elif submit and not question.strip():
     st.warning("Please enter a question.")

@@ -1,9 +1,12 @@
+"""
+Handles retrieval of relevant document chunks from the vector database based on user queries.
+"""
 from pathlib import Path
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 
-load_dotenv()
+load_dotenv()  #keys
 
 CHROMA_DIR = "data/processed/chroma_db"
 
@@ -18,18 +21,23 @@ def load_vectorstore() -> Chroma:
 
 def retrieve(query: str, vectorstore: Chroma, k: int = 5) -> list:
     """
-    Takes a question, returns top-k most relevant chunks with metadata.
-    Each result includes: page content, source document, page number, similarity score.
+    Uses raw cosine similarity instead of the normalized relevance score
+    to avoid score compression artifacts from ChromaDB's transformation.
     """
-    results = vectorstore.similarity_search_with_relevance_scores(query, k=k)
+    results = vectorstore.similarity_search_with_score(query, k=k)
     
     retrieved = []
-    for doc, score in results:
+    for doc, raw_score in results:
+        # Cosine distance from ChromaDB — convert to similarity
+        # raw_score is a distance (0 = identical, 2 = opposite)
+        # so similarity = 1 - (raw_score / 2)
+        similarity = round(1 - (raw_score / 2), 4)
+        
         retrieved.append({
             "content": doc.page_content,
             "source": doc.metadata.get("source", "Unknown"),
             "page": doc.metadata.get("page", "Unknown"),
-            "score": round(score, 4)
+            "score": similarity
         })
     
     return retrieved
